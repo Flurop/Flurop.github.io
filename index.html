@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Ollama JS Example</title>
+  <title>Ollama Chat</title>
 </head>
 <body>
   <h1>Ollama Chat</h1>
@@ -10,9 +10,7 @@
   <button id="sendBtn">Send</button>
   <div id="response" style="margin-top:20px;"></div>
 
-  <script type="module">
-    import ollama from 'https://cdn.jsdelivr.net/npm/ollama@latest/dist/browser/ollama.min.js';
-
+  <script>
     const input = document.getElementById('userInput');
     const button = document.getElementById('sendBtn');
     const responseDiv = document.getElementById('response');
@@ -24,12 +22,18 @@
       responseDiv.textContent = 'Thinking...';
 
       try {
-        const response = await ollama.chat({
-          model: 'llama3.1',
-          messages: [{ role: 'user', content: userMessage }]
+        const res = await fetch('http://127.0.0.1:11434/v1/chat/completions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: 'llama3.1',
+            messages: [{ role: 'user', content: userMessage }]
+          })
         });
 
-        responseDiv.textContent = response.message.content;
+        if (!res.ok) throw new Error(res.statusText);
+        const data = await res.json();
+        responseDiv.textContent = data.choices[0].message.content;
       } catch (err) {
         responseDiv.textContent = 'Error: ' + err.message;
       }
