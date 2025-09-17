@@ -1,8 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Redirecting...</title>
-    <meta http-equiv="refresh" content="3;url=http://192.168.1.152:5000">
+  <meta charset="UTF-8">
+  <title>Ollama JS Example</title>
 </head>
+<body>
+  <h1>Ollama Chat</h1>
+  <input type="text" id="userInput" placeholder="Type a question..." style="width:300px;">
+  <button id="sendBtn">Send</button>
+  <div id="response" style="margin-top:20px;"></div>
+
+  <script type="module">
+    import ollama from 'https://cdn.jsdelivr.net/npm/ollama@latest/dist/browser/ollama.min.js';
+
+    const input = document.getElementById('userInput');
+    const button = document.getElementById('sendBtn');
+    const responseDiv = document.getElementById('response');
+
+    button.addEventListener('click', async () => {
+      const userMessage = input.value;
+      if (!userMessage) return;
+
+      responseDiv.textContent = 'Thinking...';
+
+      try {
+        const response = await ollama.chat({
+          model: 'llama3.1',
+          messages: [{ role: 'user', content: userMessage }]
+        });
+
+        responseDiv.textContent = response.message.content;
+      } catch (err) {
+        responseDiv.textContent = 'Error: ' + err.message;
+      }
+    });
+  </script>
+</body>
 </html>
