@@ -39,9 +39,15 @@ window.addEventListener("load", async () => {
     pdfjsLib.GlobalWorkerOptions.workerSrc =
         "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 
+    async function fetchFreshPDF() {
+        // Use fetch() manually with no-cache to really force a new copy
+        const response = await fetch("prez.pdf", { cache: "no-store" });
+        const arrayBuffer = await response.arrayBuffer();
+        return await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    }
+
     async function startSlideshow() {
-        // 🔄 Add cache-buster so we always fetch the latest PDF version
-        let pdfDoc = await pdfjsLib.getDocument("prez.pdf?t=" + Date.now()).promise;
+        let pdfDoc = await fetchFreshPDF();
         let pageNum = 1;
         let totalPages = pdfDoc.numPages;
 
@@ -64,7 +70,7 @@ window.addEventListener("load", async () => {
             await renderPage(pageNum);
             pageNum++;
             if (pageNum > totalPages) {
-                // Instead of reloading the whole page, restart slideshow with new PDF
+                // 🔄 fetch a fresh copy of the PDF and start over
                 startSlideshow();
             } else {
                 setTimeout(nextPage, time * 1000);
