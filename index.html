@@ -1,43 +1,65 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Ollama Chat</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PDF Auto Flip</title>
+<style>
+  body {
+    margin: 0;
+    background: #000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+  canvas {
+    border: none;
+  }
+</style>
 </head>
 <body>
-  <h1>Ollama Chat</h1>
-  <input type="text" id="userInput" placeholder="Type a question..." style="width:300px;">
-  <button id="sendBtn">Send</button>
-  <div id="response" style="margin-top:20px;"></div>
+<canvas id="pdfCanvas"></canvas>
 
-  <script>
-    const input = document.getElementById('userInput');
-    const button = document.getElementById('sendBtn');
-    const responseDiv = document.getElementById('response');
+<!-- PDF.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.13.162/pdf.min.js"></script>
+<script>
+const url = 'your-file.pdf'; // replace with your PDF path
+const canvas = document.getElementById('pdfCanvas');
+const ctx = canvas.getContext('2d');
 
-    button.addEventListener('click', async () => {
-      const userMessage = input.value;
-      if (!userMessage) return;
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.13.162/pdf.worker.min.js';
 
-      responseDiv.textContent = 'Thinking...';
+let pdfDoc = null;
+let pageNum = 1;
 
-      try {
-        const res = await fetch('http://127.0.0.1:11434/v1/chat/completions', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            model: 'llama3.1',
-            messages: [{ role: 'user', content: userMessage }]
-          })
+async function renderPage(num) {
+    const page = await pdfDoc.getPage(num);
+    const viewport = page.getViewport({ scale: 1.5 });
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
+    await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+}
+
+async function startSlideshow() {
+    pdfDoc = await pdfjsLib.getDocument(url).promise;
+    const totalPages = pdfDoc.numPages;
+
+    function next() {
+        renderPage(pageNum).then(() => {
+            pageNum++;
+            if (pageNum > totalPages) {
+                location.reload(); // restart slideshow
+            } else {
+                setTimeout(next, 2000); // 2 seconds per page
+            }
         });
+    }
 
-        if (!res.ok) throw new Error(res.statusText);
-        const data = await res.json();
-        responseDiv.textContent = data.choices[0].message.content;
-      } catch (err) {
-        responseDiv.textContent = 'Error: ' + err.message;
-      }
-    });
-  </script>
+    next();
+}
+
+startSlideshow();
+</script>
 </body>
 </html>
