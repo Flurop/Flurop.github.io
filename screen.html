@@ -32,11 +32,11 @@ window.addEventListener("load", async () => {
         return;
     }
 
-    const url = "prez.pdf"; // <-- replace with your PDF path
+    const url = "prez.pdf";
     const canvas = document.getElementById("pdfCanvas");
     const ctx = canvas.getContext("2d");
+    const time = 20;
 
-    // ✅ Worker setup
     pdfjsLib.GlobalWorkerOptions.workerSrc =
         "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 
@@ -56,9 +56,9 @@ window.addEventListener("load", async () => {
         await renderPage(pageNum);
         pageNum++;
         if (pageNum > totalPages) {
-            location.reload(); // restart when done
+            location.reload();
         } else {
-            setTimeout(nextPage, 2000); // wait 2 sec before next page
+            setTimeout(nextPage, time*1000);
         }
     }
 
