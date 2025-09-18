@@ -22,11 +22,9 @@
 <body>
 <canvas id="pdfCanvas"></canvas>
 
-<!-- ✅ Correct way to load PDF.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>
 window.addEventListener("load", async () => {
-    // ✅ Make sure pdfjsLib is loaded before using it
     if (typeof pdfjsLib === "undefined") {
         alert("PDF.js failed to load!");
         return;
@@ -35,7 +33,7 @@ window.addEventListener("load", async () => {
     const url = "prez.pdf";
     const canvas = document.getElementById("pdfCanvas");
     const ctx = canvas.getContext("2d");
-    const time = 20;
+    const time = 10;
 
     pdfjsLib.GlobalWorkerOptions.workerSrc =
         "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
