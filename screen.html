@@ -53,7 +53,7 @@ window.addEventListener("load", async () => {
     async function nextPage() {
         await renderPage(pageNum);
         pageNum++;
-        if (pageNum-1 > totalPages) {
+        if (pageNum > totalPages) {
             location.reload();
         } else {
             setTimeout(nextPage, time*1000);
