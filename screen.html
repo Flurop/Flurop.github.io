@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PDF Auto Flip</title>
+<title>Screen</title>
 <style>
   body {
     margin: 0;
@@ -16,6 +16,8 @@
   canvas {
     display: block;
     background: white;
+    max-width: 100%;
+    max-height: 100%;
   }
 </style>
 </head>
@@ -41,13 +43,23 @@ window.addEventListener("load", async () => {
     let pdfDoc = await pdfjsLib.getDocument(url).promise;
     let pageNum = 1;
     let totalPages = pdfDoc.numPages;
+    let currentPageViewport = null; // store viewport for resize
 
     async function renderPage(num) {
         const page = await pdfDoc.getPage(num);
-        const viewport = page.getViewport({ scale: 1.5 });
-        canvas.width = viewport.width;
-        canvas.height = viewport.height;
-        await page.render({ canvasContext: ctx, viewport }).promise;
+
+        // Calculate scale based on window size
+        const unscaledViewport = page.getViewport({ scale: 1 });
+        const scale = Math.min(
+            window.innerWidth / unscaledViewport.width,
+            window.innerHeight / unscaledViewport.height
+        );
+        currentPageViewport = page.getViewport({ scale });
+
+        canvas.width = currentPageViewport.width;
+        canvas.height = currentPageViewport.height;
+
+        await page.render({ canvasContext: ctx, viewport: currentPageViewport }).promise;
     }
 
     async function nextPage() {
@@ -56,9 +68,16 @@ window.addEventListener("load", async () => {
         if (pageNum > totalPages) {
             location.reload();
         } else {
-            setTimeout(nextPage, time*1000);
+            setTimeout(nextPage, time * 1000);
         }
     }
+
+    // Re-render current page on resize
+    window.addEventListener("resize", () => {
+        if (pageNum > 1) {
+            renderPage(pageNum - 1);
+        }
+    });
 
     nextPage();
 });
